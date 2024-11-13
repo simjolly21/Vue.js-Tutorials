@@ -28,3 +28,58 @@ Here we're encountering something new. The `v-html` attrivute you're seeing is c
 
 The contents of the `span` will be replaced with the value of the `rawHtml` property, interpreted as plain HTML-data bindings are ignored. Note that you cannot use `v-html` to compose template partials, because Vue is not a sting-based templating engine. Instead, components are preferred as the fundamental unit for UI reuse and composition.
 
+## Attribute Bindings
+
+Mustaches cannot be used inside HTML attributes. Instead, use a `v-bind` [diractive](https://vuejs.org/api/built-in-directives.html#v-bind):
+
+    <div v-bind:id="dynamicId"></div>
+The `v-bind` diractive instructs Vue to keep the element's `id` attribute in sync with the component's `dynamicId` property. If the bound value is `null` or `undefined`, then the attribute will be removed from the rendered element.
+
+### Shorthand
+
+Because `v-bind` is so commonly used, it has a dedicated shorthand syntax:
+
+    <div :id="dynamicId"></div>
+
+Attributes that start with `:` may look a bit different from normal HTML, but it is in fact a valid character for attribute names and all Vue-supported browsers can parse it correctly. In addition, they do not appear in the final rendered markup. The shorthand syntax is optional, but you will likely appreciate it when you learn more about its usage later.
+
+    For the rest of the guide, we will be using the shorthand syntax in code examples, as that's the most common usage for Vue developers.
+
+### Same-name Shorthand
+
+- Only supported in 3.4+
+
+If the attribute has the same name with the JavaScript value being bound, the syntax can be further shortened to omit the attribute value:
+
+    <!-- same as :id="id" -->
+    <div :id></div>
+
+    <!-- this also works -->
+    <div v-bind:id></div>
+
+This is similar to the property shorthand syntax when declaring objects in JavaScript. Note this is a feature that is only available in Vue 3.4 and above.
+
+### Boolean Attributes
+
+[Boolean attributes](https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#boolean-attributes) are attributes that can indicate true / false values by their presence on an element. For example, `disabled` is one of the most commonly used boolean attributes.
+
+`v-bind` works a bit differently in this case:
+
+    <button :disabled="isButtonDisabled">Button</button>
+
+The `disabled` attribute will be included if `isButtonDisabled` has a [truthy value](https://developer.mozilla.org/en-US/docs/Glossary/Truthy). It will also be included if the value is an empty string, maintaining consistency with `<button disabled="">`. For other [falsy values](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) the attribute will be omitted.
+
+### Dynamically Binding Multiple Attributes
+
+If you have a JavaScript object representing multiple attributes that looks like this:
+
+    const objectOfAttrs = {
+        id: 'container',
+        class: 'wrapper',
+        style: 'background-color:green'
+    }
+
+You can bind them to a single element by using `v-bind` without an argument:
+
+    <div v-bind="objectOfAttrs"></div>
+
