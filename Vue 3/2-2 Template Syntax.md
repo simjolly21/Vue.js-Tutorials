@@ -132,4 +132,3 @@ Template expressions are sandboxed and only have access to a [restricted list of
 
 Globals not explicitly included in the list, for example use-attached properties on `window`, will not be accessible in template expressions. You can, however, explicitly define additional globals for all Vue expressions by adding them to [`app.config.globalPropertiees`](https://vuejs.org/api/application.html#app-config-globalproperties).
 
-## Directives
