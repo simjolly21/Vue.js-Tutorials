@@ -83,3 +83,53 @@ You can bind them to a single element by using `v-bind` without an argument:
 
     <div v-bind="objectOfAttrs"></div>
 
+## Using JavaScript Expressions
+
+So far we've only been binding to simple property keys in our templates. But Vue actually supports the full power of JavaScript expressions inside all data bindings:
+
+    {{ number + 1 }}
+
+    {{ ok ? 'YES' : 'NO' }}
+
+    {{ message.split('').reverse().join('') }}
+
+    <div :id="`list-${id}`"></div>
+
+These expressions will be eveluated as JavaScript in the data scope of the current component instance.
+
+In Vue templates, JavaScript expressions can be used in the following positions:
+
+- inside text interpolations(mustaches)
+- In the attribute value of any Vue directives (special attributes that start with `v-`)
+
+### Expressions Only
+
+Each binding can only contain one single expression. An expression is a piece of code that can be eveluated to a value. A sinple check is whether it can be used after `return`. 
+
+Therefore, the followint will **NOT** work:
+
+    <!-- this is a statement, not an expression: -->
+    {{ var a = 1 }}
+
+    <!-- flow control won't work either, use ternary expressions -->
+    {{ if (ok) { return message } }}
+
+### Calling Functions
+
+It is possible to call a component-exposed method inside a binding expression:
+
+    <time :title="toTitleDate(date)" :datetime="date">
+        {{ formatDate(date) }}
+    </time>
+
+***TIP***
+
+    Functions called inside binding expressions will be called every time the component updates, so they should not have any side effects, such as changing data or triggering asynchronous operations.
+
+### Restricted Globals Access
+
+Template expressions are sandboxed and only have access to a [restricted list of globals](https://github.com/vuejs/core/blob/main/packages/shared/src/globalsAllowList.ts#L3). The list exposes commonly used built-in globals such as `Math` and `Date`.
+
+Globals not explicitly included in the list, for example use-attached properties on `window`, will not be accessible in template expressions. You can, however, explicitly define additional globals for all Vue expressions by adding them to [`app.config.globalPropertiees`](https://vuejs.org/api/application.html#app-config-globalproperties).
+
+## Directives
