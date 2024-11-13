@@ -132,34 +132,3 @@ Template expressions are sandboxed and only have access to a [restricted list of
 
 Globals not explicitly included in the list, for example use-attached properties on `window`, will not be accessible in template expressions. You can, however, explicitly define additional globals for all Vue expressions by adding them to [`app.config.globalPropertiees`](https://vuejs.org/api/application.html#app-config-globalproperties).
 
-## Directives
-
-Directives are special attributes with the `v-` prefix. Vue provides a number of [built-in directives](https://vuejs.org/api/built-in-directives.html), including `v-html` and `v-bind` which we have introduced above.
-
-Directive attribute values are expected to be single JavaScript expressions (with the exception of `v-for`, `v-on` and `v-slot`, which will be discussed in their respective sections later). A directive's job is to reactively apply updates to the DOM when the value of its expression changes. Take `v-if` as an example:
-
-    <p v-if="seen">Now you see me</p>
-
-Here, the `v-if` directive would remove or insert the `<p>` element based on the truthiness of the value of the expression `seen`.
-
-### Arguments
-
-Some directives can take an "argument", denoted by a colon after the directive name. For example, the `v-bind` directive is used to reactively update an HTML attribute:
-
-    <a v-bind:href="url"> ... </a>
-
-    <!-- shorthand -->
-    <a :href="url"> ... </a>
-
-Here, `href` is the argument, which tells the `v-bind` directive to bind the element's `href` attribute to the value of the expression `url`. In the shorthand, everything before the argument (i.e., `v-bind:`) is condensed into a single character, `:`.
-
-Another example is the `v-on` directive, which listens to DOM events:
-
-    <a v-on:click="doSomething"> ... </a>
-
-    <!-- shorthand -->
-    <a @click="doSomething"> ... </a>
-
-Here, the argument is the event name to listen to: `click`. `v-on` has a corresponding shorthand, namely the `@` character. We will talk about event handling in more detail too.
-
-### Dynamic Arguments
