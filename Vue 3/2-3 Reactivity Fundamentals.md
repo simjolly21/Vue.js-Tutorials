@@ -249,3 +249,65 @@ The `reactive()` API has a few limitations:
 Due to these limitations, we recommend using `ref()` as the primary API for declaring reactive state.
 
 
+## Additional Ref Unwrapping details
+
+### As Reactive Object Property
+
+A ref is automatically unwrapped when accessed or mutated as a perperty of a reactive object. In other workds, it behaves like a normal property:
+
+    const count = ref(0)
+    const state = reactive({
+        count
+    })
+
+    console.log(state.count) // 0
+
+    state.count = 1
+    console.log(count.value) // 1
+If a new ref is assigned to a property linked to an existing ref, it will replace the old ref:
+
+    const otherCount = ref(2)
+
+    state.count = otherCount
+    console.log(state.count) // 2
+    // original ref is now disconnected from state.count
+    console.log(count.value)
+Ref unwrapping only happens when nested inside a deep reactive object. It does not apply when it is acessed as a property of a [shallow reactive object](https://vuejs.org/api/reactivity-advanced.html#shallowreactive).
+
+### Caveat in Arrarys and Collections
+
+Unlike reactive objects, there is no unwrapping performed when the ref is accessed as an element of a reactive array or a native collection type like `Map`:
+
+    const books = reactive([ref('Vue 3 Guide')])
+    // need .value here
+    console.log(books[0].value)
+
+    const map = reactive(new Map([['count', ref(0)]]))
+    // need .value here
+    console.log(map.get('count').value)
+
+### Caveat when Unwrapping in Teamplates
+
+Ref unwrapping in templates only applies if the ref is a top-level property in the template render context.
+
+In the example below, `count` and `object` are top-level properties, but `object.id` is not:
+
+    const count = ref(0)
+    const object = { id: ref(1)}
+Therefore, this expression works as expected:
+
+    {{ count + 1}}
+...while this one doese **NOT**:
+
+    {{ object.id + 1}}
+
+The rendered result will be `[object Object]1` because `object.id` is not unwrapped when evaluationg the exression and remains a ref object. To fix this, we can destructure `id` into a top-level property:
+
+    const { id } = object
+    {{ id + 1 }}
+Now the render result will be `2`.
+
+Another thing to note is that a ref does get unwrapped if it is the final evaluated talue of a text interpolation (i.e. a `{{ }}` tag), so the following will render `1`:
+
+    {{ object.id }}
+This is just a convenience feature of text interpolation and is equivalent to `{{ object.id.value}}`.
