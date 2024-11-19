@@ -156,3 +156,80 @@ The `key` binding expects primitive values - i.e. strings and numbers. Do not us
 
 ## `v-for` with a Component
 
+You can directly use `v-for` on a component, like any normal element (don't forget to provide a `key`):
+
+    <MyComponent v-for="item in items" :key="item.id" />
+
+However, this won't automatically pass any data to the component, because components have isolated scopes of their own. In order to pass the iterated data into the component, we should also use props:
+
+    <MyComponent
+        v-for="(item, index) in items"
+        :item="item"
+        :index="index"
+        :key="item.id"
+    />
+
+The reason for not automatically injecting `item` into the component is because that makes the component tightly coupled to how `v-for` works. Being explicit about where its data comes from makes the component reusable in other situations.
+
+Check out [this example of a simple todo list](https://play.vuejs.org/#eNp1U8Fu2zAM/RXCGGAHTWx02ylwgxZYB+ywYRhyq3dwLGYRYkuCJTsZjPz7KMmK3ay9JBQfH/meKA/Rk1Jp32G0jnJdtVwZ0Gg6tSkEb5RsDQzQ4h4usG9lAzGVxldoK5n8ZrAZsTQLCduRygAKUUmhDQg8WWyLZwMPtmESx4sAGkL0mH6xrMH+AHC2hvuljw03Na4h/iLBHBAY1wfUbsTFVcwoH28o2/KIIDuaQ0TTlvrwNu/TDe+7PDlKXZ6EZxTiN4kuRI3W0dk4u4yUf7bZfScqw6WAkrEf3m+y8AOcw7Qv6w5T1elDMhs7Nbq7e61gdmme60SQAvgfIhExiSSJeeb3SBukAy1D1aVBezL5XrYN9Csp1rrbNdykqsUehXkookl0EVGxlZHX5Q5rIBLhNHFlbRD6xBiUzlOeuZJQz4XqjI+BxjSSYe2pQWwRBZizV01DmsRWeJA1Qzv0Of2TwldE5hZRlVd+FkbuOmOksJLybIwtkmfWqg+7qz47asXpSiaN3lxikSVwwfC8oD+/sEnV+oh/qcxmU85mebepgLjDBD622Mg+oDrVquYVJm7IEu4XoXKTZ1dho3gnmdJhedEymn9ab3ysDPdc4M9WKp28xE5JbB+rzz/Trm3eK3LAu8/E7p2PNzYM/i3ChR7W7L7hsSIvR7L2Aal1EhqTp80vF95sw3WcG7r8A0XaeME=) to see how to render a list of components using `v-for`, passing different data to each instance.
+
+## Array Change Detection
+
+### Mutation Methods
+
+Vue is able to detect when a reactive array's mutation methods are called and trigger necessary updates. These mutation methods are:
+
+- `push()`
+- `pop()`
+- `shift()`
+- `unshift()`
+- `splice()`
+- `sort`
+- `reverse()`
+
+### Replacing an Array
+
+Mutation methods, as the name suggests, mutate the original array they are called on. In comparison, there are also non-mutating methods, e.g. `filter()`, `concat()` and `slice()`, which do not mutate the original array but always return a new array. When working with non-mutating methods, we should replace the old array with the new one:
+
+    // `items` is a ref with array value
+    items.value = items.value.filter((item) => item.message.match(/Foo/))
+
+You might think this will cause Vue to throw away the existing DOM and re-render the entire list - luckily, that is not the case. Vue implements some smart heuristics to maximize DOM element reuse, so replacing an array with another array containing overlapping objects is a very efficient operation.
+
+## Displaying Filtered/Sorted Results
+
+Sometimes we want to display a filtered or sorted version of an array without actually mutating or resetting the original data. In this case, you can create a computed property that returns the filtered or sorted array.
+
+For example:
+
+    const numbers = ref([1, 2, 3, 4, 5])
+
+    const evenNumbers = computed(() => {
+        return numbers.value.filter((n) => n % 2 === 0)
+    })
+
+`
+
+    <li v-for="n in evenNumbers">{{ n }}</li>
+
+In situations where compyted properties are not feasible (e.g. inside nested `v-for` loops), you can use a methods:
+
+    const sets = ref([
+        [1, 2, 3, 4, 5],
+        [6, 7, 8, 9, 10]
+    ])
+
+    function even(numbers) {
+        return numbers.filter((number) => number % 2 === 0)
+    }
+
+`
+
+    <ul v-for="numbers in sets">
+        <li v-for="n in even(numbers)">{{ n }}</li>
+    </ul>
+
+Be careful with `reverse()` and `sort()` in a computed property! These two methods will mutate the original array, which should be avoided in computed getters. Create a copy of the original array before calling these methods:
+
+    - return numbers.reverse()
+    + return [...numbers].reverse()
