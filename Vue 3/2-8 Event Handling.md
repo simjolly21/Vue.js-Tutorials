@@ -135,5 +135,73 @@ The `.capture`, `.once`, and `.passive` modifiers mirror the [options of the nat
 
 The `.passive` modifier is typically used with touch event listeners for [improving performance on mobile devices](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scroll_performance_using_passive_listeners).
 
+
 ## Key Modifiers
 
+When listening for keyboard events, we often need to check for specific keys. Vue allows adding key modifiers for `v-on` or `@` when listening for key events:
+
+
+    <!-- only call `submit` when the `key` is `Enter` -->
+    <input @keyup.enter="submit" />
+
+You can directly use any valid key names exposed via `KeyboardEvent.key` as modifiers by converting them to kebab-case.
+
+
+    <input @keyup.page-down="onPageDown" />
+
+In the above example, the handler will only be called if `$event.key` is equal to `'PageDown'`.
+
+### Key Aliases
+
+Vue provides aliases for the most commonly used keys:
+
+- `.enter`
+- `.tab`
+- `delete` (captures both "Delete" and "Backspace" keys)
+- `.esc`
+- `.space`
+- `.up`
+- `.down`
+- `.left`
+- `.right`
+
+### System Modifier Keys
+
+You can use thf following modifiers to trigger mouse or key board event listners only when the corresponding modifier key is pressed:
+
+- `.ctrl`
+- `.alt`
+- `.shift`
+- `.meta`
+
+For example:
+
+    <!-- Alt + Enter -->
+    <input @keyup.alt.enter="clear" />
+
+    <!-- Ctrl + Click -->
+    <div @click.ctrl="doSomething">Do something</div>
+
+### `.exact` Modifier
+
+The `.exact` modifier allows control of the exact combination of system modifiers needed to trigger an event.
+
+    <!-- this will fire even if Alt or Shift is also pressed -->
+    <button @click.ctrl="onClick">A</button>
+
+    <!-- this will only fire when Ctrl and no other keys are pressed -->
+    <button @click.ctrl.exact="onCtrlClick">A</button>
+
+    <!-- this will only fire when no system modifiers are pressed -->
+    <button @click.exact="onClick">A</button>
+
+
+## Mouse Button Modifiers
+
+- `.left`
+- `.right`
+- `.middle`
+
+These modifiers restrict the handler to events triggered by a specific mouse button.
+
+Note, however, that `.left`, `.right`, and `.middle` modifier names are based on the typical right-handed mouse layout, but in fact represent "main", "secondary", and "auxiliary" pointing device event triggers, respectively, and not the actual physical buttons. So that for a left-handed mouse layout the "main" button might physically be the right one but would trigger the `.left` modifier handler. Or a trackpad might trigger the `.left` handler with a one-finger tap, the `.right` handler with a two-finger tap, and the `.middle` handler with a three-finger tap. Similarly, other devices and event sources generating "mouse" events might have trigger modes that are not related to "left" and "right" whatsoever.
