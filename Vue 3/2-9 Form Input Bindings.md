@@ -110,3 +110,74 @@ Select options can be dynamically rendered with `v-for`:
 
     <div>Selected: {{ selected }}</div>
 
+## Value Bindings
+
+For radio, checkbox and select options, the `v-model` binding values are usually static strings (or booleans for checkbox):
+
+    <!-- `picked` is a string "a" when checked -->
+    <input type="radio" v-model="picked" value="a" />
+
+    <!-- `toggle` is either true or false -->
+    <input type="checkbox" v-model="toggle" />
+
+    <!-- `selected` is a string "abc" when the first option is selected -->
+    <select v-model="selected">
+        <option value="abc">ABC</option>
+    </select>
+
+But sometimes we may want to bind the value to a dynamic property on the current active instance. We can use `v-bind` to achieve that. In addition, using `v-bind` allows us to bind the input value to non-string values.
+
+### Checkbox
+
+    <input
+        type="checkbox"
+        v-model="toggle"
+        true-value="yes"
+        false-value="no" />
+
+### Radio
+
+    <input type="radio" v-model="pick" :value="first" />
+    <input type="radio" v-model="pick" :value="second" />
+
+`pick` will be set to the value of `first` when the first radio input is checked, and set to the value of `second` when the second one is checked.
+
+### Select Options
+
+    <select v-model="selected">
+        <!-- inline object literal -->
+        <option :value="{ number: 123 }">123</option>
+    </select>
+
+`v-model` supports value bindings of non-string values as well! In the above example, when the option is selected, `selected` will be set to the object literal value of `{ number: 123 }`.
+
+## Modifiers
+
+### `.lazy`
+
+By default, `v-model` syncs the `input` with the data after each input event (with the exception of IME composition as stated above). You can add the `lazy` modifier to instead sync after `change` events:
+
+    <!-- synced after "change" instead of "input" -->
+    <input v-model.lazy="msg" />
+
+### `.number`
+
+If you want user input to be automatically typecast as a number, you can add the `number` modifier to your `v-model` managed inputs:
+
+
+    <input v-model.number="age" />
+
+If the value cannot be parsed with `parseFloat()`, then the original (string) value is used instead. In particular, if the input is empty (for instance after the user clearing the input field), an empty string is returned. This behavior differs from the [DOM property `valueAsNumber`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement#valueasnumber).
+
+The `number` modifier is applied automatically if the input has `type="number"`.
+
+### `.trim`
+
+If you want whitespace from user input to be trimmed automatically, you can add the `trim` modifier to your `v-model`-managed inputs:
+
+
+    <input v-model.trim="msg" />
+
+## `v-model` with Components
+
+HTML's built-in input types won't always meet your needs. Fortunately, Vue components allow you to build reusable inputs with completely customized behavior. These inputs even work with `v-model`! To learn more, read about [Usage with `v-model`](https://vuejs.org/guide/components/v-model) in the Components guide.
