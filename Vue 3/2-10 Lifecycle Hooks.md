@@ -38,5 +38,3 @@ Below is a diagram for the instance lifecycle. You don't need to fully understan
 
 
 Consult the [Lifecycle Hooks API reference](https://vuejs.org/api/composition-api-lifecycle) for details on all lifecycle hooks and their respective use cases.
-
-asdfasdf
