@@ -133,3 +133,108 @@ We can force a watcher's callback to be executed immediately by passing the `imm
         { immediate: true }
     )
 
+
+## Once Watchers
+
+Watcher's callback will execute whenever the watched source changes. If you want the callback to trigger only once when the source changes, use the `once: true` option.
+
+    watch(
+        source,
+        (newValue, oldValue) => {
+            // when `source` changes, triggers only once
+        },
+        { once: true }
+    )
+
+## `watchEffect()`
+
+It is common for the watcher callback to use exactly the same reactive state as the source. For example, consider the following code, which uses a watcher to load a remote resource whenever the `todoId` ref changes:
+
+const todoId = ref(1)
+const data = ref(null)
+
+    watch(
+        todoId,
+        async () => {
+            const response = await fetch(
+            `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+            )
+            data.value = await response.json()
+        },
+        { immediate: true }
+    )
+
+In particular, notice how the watcher uses `todoId` twice, once as the source and then again inside the callback.
+
+This can be simplified with `watchEffect()`. `watchEffect()` allows us to track the callback's reactive dependencies automatically. The watcher above can be rewritten as:
+
+    watchEffect(async () => {
+        const response = await fetch(
+            `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+        )
+        data.value = await response.json()
+    })
+
+Here, the callback will run immediately, there's no need to specify `immediate: true`. During its execution, it will automatically track `todoId.value` as a dependency (similar to computed properties). Whenever `todoId.value` changes, the callback will be run again. With `watchEffect()`, we no longer need to pass `todoId` explicitly as the source value.
+
+You can check out this example of `watchEffect()` and reactive data-fetching in action.
+
+For examples like these, with only one dependency, the benefit of `watchEffect()` is relatively small. But for watchers that have multiple dependencies, using `watchEffect()` removes the burden of having to maintain the list of dependencies manually. In addition, if you need to watch several properties in a nested data structure, `watchEffect()` may prove more efficient than a deep watcher, as it will only track the properties that are used in the callback, rather than recursively tracking all of them.
+
+### `watch` vs. `watchEffect`
+
+`watch` and `watchEffect` both allow us to reactively perform side effects. Their main difference is the way they track their reactive dependencies:
+
+- `watch` only tracks the explicitly watched source. It won't track anything accessed inside the callback. In addition, the callback only triggers when the source has actually changed. `watch` separates dependency tracking from the side effect, giving us more precise control over when the callback should fire.
+
+- `watchEffect`, on the other hand, combines dependency tracking and side effect into one phase. It automatically tracks every reactive property accessed during its synchronous execution. This is more convenient and typically results in terser code, but makes its reactive dependencies less explicit.
+
+## Side Effect Cleanup
+
+Sometimes we may perform side effects, e.g. asynchronous requests, in a watcher:
+
+    watch(id, (newId) => {
+        fetch(`/api/${newId}`).then(() => {
+            // callback logic
+        })
+    })
+
+But what if `id` changes before the request completes? When the previous request completes, it will still fire the callback with an ID value that is already stale. Ideally, we want to be able to cancel the stale request when `id` changes to a new value.
+
+We can use the [`onWatcherCleanup()`](https://vuejs.org/api/reactivity-core#onwatchercleanup) <sup>3.5+</sup>  API to register a cleanup function that will be called when the watcher is invalidated and is about to re-run:
+
+    import { watch, onWatcherCleanup } from 'vue'
+
+    watch(id, (newId) => {
+        const controller = new AbortController()
+
+        fetch(`/api/${newId}`, { signal: controller.signal }).then(() => {
+            // callback logic
+        })
+
+        onWatcherCleanup(() => {
+            // abort stale request
+            controller.abort()
+        })
+    })
+
+Note that `onWatcherCleanup` is only supported in Vue 3.5+ and must be called during the synchronous execution of a `watchEffect` effect function or `watch` callback function: you cannot call it after an `await` statement in an async function.
+
+Alternatively, an `onCleanup` function is also passed to watcher callbacks as the 3rd argument, and to the `watchEffect` effect function as the first argument:
+
+        watch(id, (newId, oldId, onCleanup) => {
+        // ...
+        onCleanup(() => {
+            // cleanup logic
+        })
+        })
+
+        watchEffect((onCleanup) => {
+        // ...
+        onCleanup(() => {
+            // cleanup logic
+        })
+    })
+
+This works in versions before 3.5. In addition, `onCleanup` passed via function argument is bound to the watcher instance so it is not subject to the synchronously constraint of `onWatcherCleanup`.
+
