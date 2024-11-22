@@ -238,3 +238,89 @@ Alternatively, an `onCleanup` function is also passed to watcher callbacks as th
 
 This works in versions before 3.5. In addition, `onCleanup` passed via function argument is bound to the watcher instance so it is not subject to the synchronously constraint of `onWatcherCleanup`.
 
+## Callback Flush Timing
+
+When you mutate reactive state, it may trigger both Vue component updates and watcher callbacks created by you.
+
+Similar to component updates, user-created watcher callbacks are batched to avoid duplicate invocations. For example, we probably don't want a watcher to fire a thousand times if we synchronously push a thousand items into an array being watched.
+
+By default, a watcher's callback is called after parent component updates (if any), and before the owner component's DOM updates. This means if you attempt to access the owner component's own DOM inside a watcher callback, the DOM will be in a pre-update state.
+
+### Post Watchers
+
+If you want to access the owner component's DOM in a watcher callback after Vue has updated it, you need to specify the `flush: 'post'` option:
+
+
+    watch(source, callback, {
+        flush: 'post'
+    })
+
+    watchEffect(callback, {
+        flush: 'post'
+    })
+
+Post-flush `watchEffect()` also has a convenience alias, `watchPostEffect()`:
+
+    import { watchPostEffect } from 'vue'
+
+    watchPostEffect(() => {
+        /* executed after Vue updates */
+    })
+
+### Sycn Watchers
+
+It's also possible to create a watcher that fires synchronously, before any Vue-managed updates:
+
+    watch(source, callback, {
+        flush: 'sync'
+    })
+
+    watchEffect(callback, {
+        flush: 'sync'
+    })
+
+Sync `watchEffect()` also has a convenience alias, `watchSyncEffect()`:
+
+
+    import { watchSyncEffect } from 'vue'
+
+    watchSyncEffect(() => {
+        /* executed synchronously upon reactive data change */
+    })
+
+## Stopping a Watcher
+
+Watchers declared synchronously inside `setup()` or `<script setup>` are bound to the owner component instance, and will be automatically stopped when the owner component is unmounted. In most cases, you don't need to worry about stopping the watcher yourself.
+
+The key here is that the watcher must be created synchronously: if the watcher is created in an async callback, it won't be bound to the owner component and must be stopped manually to avoid memory leaks. Here's an example:
+
+    <script setup>
+    import { watchEffect } from 'vue'
+
+    // this one will be automatically stopped
+    watchEffect(() => {})
+
+    // ...this one will not!
+    setTimeout(() => {
+        watchEffect(() => {})
+    }, 100)
+    </script>
+
+To manually stop a watcher, use the returned handle function. This works for both `watch` and `watchEffect`:
+
+    const unwatch = watchEffect(() => {})
+
+    // ...later, when no longer needed
+    unwatch()
+
+Note that there should be very few cases where you need to create watchers asynchronously, and synchronous creation should be preferred whenever possible. If you need to wait for some async data, you can make your watch logic conditional instead:
+
+    // data to be loaded asynchronously
+    const data = ref(null)
+
+    watchEffect(() => {
+        if (data.value) {
+            // do something when data is loaded
+        }
+    })
+
