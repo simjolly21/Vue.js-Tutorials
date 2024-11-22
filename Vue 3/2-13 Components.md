@@ -215,3 +215,124 @@ If you are not using `<script setup>`, you can declare emitted events using the 
 
 That's all you need to know about custom component events for now, but once you've finished reading this page and feel comfortable with its content, we recommend coming back later to read the full guide on [Custom Events](https://vuejs.org/guide/components/events.html).
 
+## Content Distribution with Slots
+
+Just like with HTML elements, it's often useful to be able to pass content to a component, like this:
+
+
+    <AlertBox>
+        Something bad happened.
+    </AlertBox>
+
+
+Which might render something like:
+
+    This is an Error for Demo Purposes
+
+    Something bad happened.
+
+This can be achieved using Vue's custom `<slot>` element:
+
+
+    <!-- AlertBox.vue -->
+    <template>
+        <div class="alert-box">
+            <strong>This is an Error for Demo Purposes</strong>
+            <slot />
+        </div>
+    </template>
+
+    <style scoped>
+    .alert-box {
+        /* ... */
+    }
+    </style>
+
+
+As you'll see above, we use the `<slot>` as a placeholder where we want the content to go – and that's it. We're done!
+
+That's all you need to know about slots for now, but once you've finished reading this page and feel comfortable with its content, we recommend coming back later to read the full guide on [Slots](https://vuejs.org/guide/components/slots.html).
+
+## Dynamic Components
+
+Sometimes, it's useful to dynamically switch between components, like in a tabbed interface:
+
+The above is made possible by Vue's `<component>` element with the special `is` attribute:
+
+    <!-- Component changes when currentTab changes -->
+    <component :is="tabs[currentTab]"></component>
+
+In the example above, the value passed to `:is` can contain either:
+
+- the name string of a registered component, OR
+- the actual imported component object
+
+You can also use the `is` attribute to create regular HTML elements.
+
+When switching between multiple components with `<component :is="...">`, a component will be unmounted when it is switched away from. We can force the inactive components to stay "alive" with the built-in [`<KeepAlive>` component](https://vuejs.org/guide/built-ins/keep-alive.html).
+
+## in-DOM Template Parsing caveats
+
+If you are writing your Vue templates directly in the DOM, Vue will have to retrieve the template string from the DOM. This leads to some caveats due to browsers' native HTML parsing behavior.
+
+### Case Insensitivity
+
+HTML tags and attribute names are case-insensitive, so browsers will interpret any uppercase characters as lowercase. That means when you’re using in-DOM templates, PascalCase component names and camelCased prop names or `v-on` event names all need to use their kebab-cased (hyphen-delimited) equivalents:
+
+    // camelCase in JavaScript
+    const BlogPost = {
+        props: ['postTitle'],
+        emits: ['updatePost'],
+        template: `
+            <h3>{{ postTitle }}</h3>
+        `
+    }
+
+`
+
+    <!-- kebab-case in HTML -->
+    <blog-post post-title="hello!" @update-post="onUpdatePost"></blog-post>
+
+### Self Closing tags
+
+We have been using self-closing tags for components in previous code samples:
+
+    <MyComponent />
+
+This is because Vue's template parser respects `/>` as an indication to end any tag, regardless of its type.
+
+In in-DOM templates, however, we must always include explicit closing tags:
+
+    <my-component></my-component>
+
+This is because the HTML spec only allows [a few specific elements](https://html.spec.whatwg.org/multipage/syntax.html#void-elements) to omit closing tags, the most common being `<input>` and `<img>`. For all other elements, if you omit the closing tag, the native HTML parser will think you never terminated the opening tag. For example, the following snippet:
+
+    <my-component /> <!-- we intend to close the tag here... -->
+    <span>hello</span>
+
+will be parsed as:
+
+    <my-component>
+        <span>hello</span>
+    </my-component> <!-- but the browser will close it here. -->
+
+### Element Placement Restrictions
+
+Some HTML elements, such as `<ul>`, `<ol>`, `<table>` and `<select>` have restrictions on what elements can appear inside them, and some elements such as `<li>`, `<tr>`, and `<option>` can only appear inside certain other elements.
+
+This will lead to issues when using components with elements that have such restrictions. For example:
+
+    <table>
+        <blog-post-row></blog-post-row>
+    </table>
+
+The custom component `<blog-post-row>` will be hoisted out as invalid content, causing errors in the eventual rendered output. We can use the special `is` attribute as a workaround:
+
+    <table>
+        <tr is="vue:blog-post-row"></tr>
+    </table>
+
+That's all you need to know about in-DOM template parsing caveats for now - and actually, the end of Vue's Essentials. Congratulations! There's still more to learn, but first, we recommend taking a break to play with Vue yourself - build something fun, or check out some of the [Examples](https://vuejs.org/examples/) if you haven't already.
+
+Once you feel comfortable with the knowledge you've just digested, move on with the guide to learn more about components in depth.
+
