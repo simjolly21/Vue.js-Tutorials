@@ -332,7 +332,7 @@ The custom component `<blog-post-row>` will be hoisted out as invalid content, c
         <tr is="vue:blog-post-row"></tr>
     </table>
 
-
+That's all you need to know about in-DOM template parsing caveats for now - and actually, the end of Vue's Essentials. Congratulations! There's still more to learn, but first, we recommend taking a break to play with Vue yourself - build something fun, or check out some of the [Examples](https://vuejs.org/examples/) if you haven't already.
 
 Once you feel comfortable with the knowledge you've just digested, move on with the guide to learn more about components in depth.
 
