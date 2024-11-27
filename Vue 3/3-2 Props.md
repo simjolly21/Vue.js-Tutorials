@@ -110,3 +110,22 @@ The external function can call the getter (or normalize it with [toValue](https:
 ## Prop Passing Details
 
 ### Prop Name Casing
+
+We declare long prop names using camelCase because this avoids having to use quotes when using them as property keys, and allows us to reference them directly in template expressions because they are valid JavaScript identifiers:
+
+    defineProps({
+        greetingMessage: String
+    })
+
+`
+
+    <span>{{ greetingMessage }}</span>
+
+Technically, you can also use camelCase when passing props to a child component (except in [in-DOM templates](https://vuejs.org/guide/essentials/component-basics.html#in-dom-template-parsing-caveats)). However, the convention is using kebab-case in all cases to align with HTML attributes:
+
+    <MyComponent greeting-message="hello" />
+
+We use [PascalCase for component tags](https://vuejs.org/guide/components/registration.html#component-name-casing) when possible because it improves template readability by differentiating Vue components from native elements. However, there isn't as much practical benefit in using camelCase when passing props, so we choose to follow each language's conventions.
+
+### Static vs.Dynamic Props
+
