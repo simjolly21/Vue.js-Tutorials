@@ -129,3 +129,82 @@ We use [PascalCase for component tags](https://vuejs.org/guide/components/regist
 
 ### Static vs.Dynamic Props
 
+So far, you've seen props passed as static values, like in:
+
+    <BlogPost title="My journey with Vue" />
+
+You've also seen props assigned dynamically with `v-bind` or its `:` shortcut, such as in:
+
+    <!-- Dynamically assign the value of a variable -->
+    <BlogPost :title="post.title" />
+
+    <!-- Dynamically assign the value of a complex expression -->
+    <BlogPost :title="post.title + ' by ' + post.author.name" />
+
+### Passing Different Value Types
+
+In the two examples above, we happen to pass string values, but any type of value can be passed to a prop.
+
+#### Number
+
+    <!-- Even though `42` is static, we need v-bind to tell Vue that -->
+    <!-- this is a JavaScript expression rather than a string.       -->
+    <BlogPost :likes="42" />
+
+    <!-- Dynamically assign to the value of a variable. -->
+    <BlogPost :likes="post.likes" />
+
+#### Boolean
+
+    <!-- Including the prop with no value will imply `true`. -->
+    <BlogPost is-published />
+
+    <!-- Even though `false` is static, we need v-bind to tell Vue that -->
+    <!-- this is a JavaScript expression rather than a string.          -->
+    <BlogPost :is-published="false" />
+
+    <!-- Dynamically assign to the value of a variable. -->
+    <BlogPost :is-published="post.isPublished" />
+
+#### Array
+
+    <!-- Even though the array is static, we need v-bind to tell Vue that -->
+    <!-- this is a JavaScript expression rather than a string.            -->
+    <BlogPost :comment-ids="[234, 266, 273]" />
+
+    <!-- Dynamically assign to the value of a variable. -->
+    <BlogPost :comment-ids="post.commentIds" />
+
+#### Object
+
+    <!-- Even though the object is static, we need v-bind to tell Vue that -->
+    <!-- this is a JavaScript expression rather than a string.             -->
+    <BlogPost
+        :author="{
+            name: 'Veronica',
+            company: 'Veridian Dynamics'
+        }"
+    />
+
+    <!-- Dynamically assign to the value of a variable. -->
+    <BlogPost :author="post.author" />
+
+### Binding Multiple Properties Using an Object
+
+If you want to pass all the properties of an object as props, you can use [`v-bind` without an argument](https://vuejs.org/guide/essentials/template-syntax.html#dynamically-binding-multiple-attributes) (`v-bind` instead of `:prop-name`). For example, given a `post` object:
+
+    const post = {
+        id: 1,
+        title: 'My Journey with Vue'
+    }
+
+The following template:
+
+    <BlogPost v-bind="post" />
+
+Will be equivalent to:
+
+    <BlogPost :id="post.id" :title="post.title" />
+
+## One-Way Data Flow
+
