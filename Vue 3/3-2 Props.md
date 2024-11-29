@@ -245,3 +245,118 @@ The main drawback of such mutations is that it allows the child component to aff
 
 ## Prop Validation
 
+Components can specify requirements for their props, such as the types you've already seen. If a requirement is not met, Vue will warn you in the browser's JavaScript console. This is especially useful when developing a component that is intended to be used by others.
+
+To specify prop validations, you can provide an object with validation requirements to the `defineProps()` macro, instead of an array of strings. For example:
+
+    defineProps({
+        // Basic type check
+        //  (`null` and `undefined` values will allow any type)
+        propA: Number,
+        // Multiple possible types
+        propB: [String, Number],
+        // Required string
+        propC: {
+            type: String,
+            required: true
+        },
+        // Required but nullable string
+        propD: {
+            type: [String, null],
+            required: true
+        },
+        // Number with a default value
+        propE: {
+            type: Number,
+            default: 100
+        },
+        // Object with a default value
+        propF: {
+            type: Object,
+            // Object or array defaults must be returned from
+            // a factory function. The function receives the raw
+            // props received by the component as the argument.
+            default(rawProps) {
+            return { message: 'hello' }
+            }
+        },
+        // Custom validator function
+        // full props passed as 2nd argument in 3.4+
+        propG: {
+            validator(value, props) {
+            // The value must match one of these strings
+            return ['success', 'warning', 'danger'].includes(value)
+            }
+        },
+        // Function with a default value
+        propH: {
+            type: Function,
+            // Unlike object or array default, this is not a factory
+            // function - this is a function to serve as a default value
+            default() {
+            return 'Default function'
+            }
+        }
+    })
+
+Additional details:
+
+- All props are optional by default, unless `required: true` is specified.
+
+- An absent optional prop other than `Boolean` will have `undefined` value.
+
+- The `Boolean` absent props will be cast to `false`. You can change this by setting a `default` for it — i.e.: `default: undefined` to behave as a non-Boolean prop.
+
+- If a `default` value is specified, it will be used if the resolved prop value is `undefined` - this includes both when the prop is absent, or an explicit `undefined` value is passed.
+
+When prop validation fails, Vue will produce a console warning (if using the development build).
+
+If using [Type-based props declarations](https://vuejs.org/api/sfc-script-setup#type-only-props-emit-declarations) <sup>`TS`</sup>, Vue will try its best to compile the type annotations into equivalent runtime prop declarations. For example, `defineProps<{ msg: string }>` will be compiled into `{ msg: { type: String, required: true }}`.
+
+### Runtime Type Checks
+
+The `type` can be one of the following native constructors:
+
+- `String`
+- `Number`
+- `Boolean`
+- `Array`
+- `Object`
+- `Date`
+- `Function`
+- `Symbol`
+- `Error`
+
+In addition, `type` can also be a custom class or constructor function and the assertion will be made with an `instanceof` check. For example, given the following class:
+
+    class Person {
+        constructor(firstName, lastName) {
+            this.firstName = firstName
+            this.lastName = lastName
+        }
+    }
+
+You could use it as a prop's type:
+
+    defineProps({
+        author: Person
+    })
+
+Vue will use `instanceof Person` to validate whether the value of the `author` prop is indeed an instance of the `Person` class.
+
+### Nullable Type
+
+If the type is required but nullable, you can use the array syntax that includes `null`:
+
+    defineProps({
+        id: {
+            type: [String, null],
+            required: true
+        }
+    })
+
+Note that if `type` is just `null` without using the array syntax, it will allow any type.
+
+
+## Boolean Casting
+
