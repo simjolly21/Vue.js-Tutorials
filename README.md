@@ -20,7 +20,7 @@
 - ### Lifecycle Hooks
 - ### Watchers
 - ### Template Refs
-- 
+
 - ### Components Basics
 
 ## 3. Components In-Depth
