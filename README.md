@@ -7,6 +7,7 @@
 
 ## 2. Essentials
 
+
 - ### Creating an Application
 - ### Template Syntax
 - ### Reactivity Fundamentals
